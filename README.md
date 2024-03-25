@@ -22,3 +22,8 @@ CardioMat toolbox was tested on Matlab R2023b and it is supposed to work for thi
 The runSimulation.m function uses the gpuArray structure thus it requires the **Parallel Computing Toolbox**.
 createPurkinje.m, VolSh.m, and VolShFrame.m requires the **Image Processing Toolbox**.
 The vox2carp.m function requires iso2mesh toolbox available in the Matlab path (dowload from: https://github.com/fangq/iso2mesh). vox2carp.m allows to generates 3D mesh in openCARP (https://opencarp.org/) format, including fiber orientation and domain labels.
+
+
+## License 
+
+CardioMat is licensed under the terms of the GNU General Public License version 3 as published by the Free Software Foundation. You can redistribute CardioMat and/or modify it under its terms. 
