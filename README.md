@@ -13,7 +13,7 @@ CardioMat is a Matlab toolbox for cardiac electrophysiology simulation focused o
 
 ## Usage
 
-Each function is provided with an help documentation explaining the usage of the function. 3 example scripts showing the use of CardioMat in different scenarios are available at .....  
+Each function is provided with an help documentation explaining the usage of the function. 3 example scripts showing the use of CardioMat in different scenarios will be available soon.  
 Simulation results are saved into a binary file and can be visualized with PlotFrame.m and VolShFrame.m functions. The former uses standard Matlab figures, the latter is based on volshow() matlab command and uses a viewer3d. 
 
 ## Requirements
