@@ -31,6 +31,7 @@ end
 options.plot=false;
 intraventricular=reshape(intraventricular,size(VoxelMat));
 LV=VoxelMat & intraventricular<=0.5;
+clc
 disp('Generating left ventricle Purkinje network...')
 [lv_nodes,lv_elem,lv_act_times]=createPurkinje(LV,transmural,apicobasal,options);
 

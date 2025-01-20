@@ -14,7 +14,7 @@ end
 if nargin<4
     cmap=parula;
 end
-vol_col=reshape(extrapField(vol_col,VoxelMat,extInd,[],1),size(VoxelMat));
+vol_col=reshape(extrapField(vol_col,VoxelMat,extInd,[],10),size(VoxelMat));
 vol_col(isnan(vol_col))=0;
 vol_handle=volshow(vol_col);
 vol_handle.AlphaData=VoxelMat;

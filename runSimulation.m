@@ -2,7 +2,7 @@ function runSimulation(VoxelMat,options)
 % runSimulation(VoxelMat,options) runs a monodomain simulation on the
 % voxelized geometry VoxelMat by using the smoothed boundary method.
 % options is an optional structure input to define optional parameters.
-% Possible field of options structures are:
+% Possible fields of option structure are:
 %
 % - res: define the resolution of voxelized geometry (default=0.25 mm)
 %
@@ -34,16 +34,28 @@ function runSimulation(VoxelMat,options)
 % subfields:
 %       - nodes (mandatory): nodes composing Purkinje network
 %       - elem (mandatory): nodes composing Purkinje network
-%       - times (mandatory): activation times for each node of PKJ network
+%       - CV (optional): conduction velocity in the Purkinje network
+%       (default=340 cm/s)
 %       - stimTimes (optional): time at which His bundle is stimulated
 %       (default=0)
 %       - current (optional): current delivered at the PMJ (default=300
 %       V/s)
 %       - duration (optional): duration of stimulation at the PMJ
 %       (default=2 ms)
+%       - ant_delay (optional): anterograde conduction delay at PMJ
+%       (default=8 ms)
+%       - retro_delay (optional): retrograde conduction delay at PMJ
+%       (default=3 ms)
+%       - ERP (optional): effective refractory period at PMJ(default=400ms)
+%       - fib_thr (optional): thrshold value on the normalized pixel
+%       intensity to disable PMJ in the border zone (default=0.4)
+% duration, ant_delay, retro_delay, and ERP can be defined as scalar
+% quantity equal for each PMJ or as a vector of length equal to terminal
+% nodes in the purkinje tree (use "term_mask=not(ismember(pkn_elem(:,2),pkn_elem(:,1)));
+% term_ind=pkn_elem(term_mask,2); " to find voxel coordinate of PMJs).
 %
-% - ExtStim: is a structure to define an external stimulation with the
-% following subfields:
+% - ExtStim: is an array of structures to define external stimulations with the
+% following subfields (each array element correspond to a stimulation):
 %       - times (mandatory): a vector containing the stimulation times
 %       - duration (mandatory): duration of the stimulations
 %       - current (mandatory): stimulation current
@@ -59,11 +71,27 @@ function runSimulation(VoxelMat,options)
 % then no visualization is provided (default= 5 ms).
 %
 %- savefile: structure to specify if save the membrane potential to a
-%binary file. the savefile structure must have the following subfields:
+%binary file. The savefile structure must have the following subfields:
 %       - filename: name of the file where the memebrane potential will be
 %       saved
 %       - dt: time interval for saving.
-
+%
+%- phase_xi: xi parameter used for phase field computation (see
+%computePhase, default: 0.25 mm).
+%
+%- phase_dt: timestep used for phase field computation(default: 0.02 ms).
+%
+%- phase_thr: defines a phase field threshold below which voxels are not
+%considered for computation of membrane potential (default: 1e-4).
+%
+%- save_state: structure to specify savings of the state of the
+%simulations. The savestate structure may have two subfields:
+%   - times: defines a vector of times at which saving the state
+%     variables (default: [], no savings).
+%   - filename: prefix name of mat files (default: 'sim').
+%
+%- load_state: filename of a mat file containing the state variables of the
+%ionic model to use as initial condition.
 
 
 
@@ -138,27 +166,30 @@ else
 end
 
 if isfield(options, 'ExtStim')
-    ExtTimes=options.ExtStim.times;
-    if isfield(options.ExtStim,'locations')
-        ExtLoc=options.ExtStim.location;
-        toSelect=0;
-    else
-        toSelect=1;
+    Stim(length(options.ExtStim))=struct();
+    for i=1:length(options.ExtStim)
+        Stim(i).ExtTimes=options.ExtStim(i).times;
+        if isfield(options.ExtStim(i),'location')
+            Stim(i).ExtLoc=options.ExtStim(i).location;
+            Stim(i).toSelect=0;
+        else
+            Stim(i).toSelect=1;
+        end
+        Stim(i).Iext=options.ExtStim(i).current;
+        Stim(i).ExtDuration=options.ExtStim(i).duration;
     end
-    Iext=options.ExtStim.current;
-    ExtDuration=options.ExtStim.duration;
 else
-    if isfield(options,'pkj')
-        ExtTimes=[];
-        ExtLoc=0;
-        Iext=0;
-        toSelect=0;
-        ExtDuration=0;
+    if isfield(options,'pkj') || isfield(options,'load_state')
+        Stim(1).ExtTimes=[];
+        Stim(1).ExtLoc=0;
+        Stim(1).Iext=0;
+        Stim(1).toSelect=0;
+        Stim(1).ExtDuration=0;
     else
-        ExtTimes=0;
-        toSelect=1;
-        Iext=50;
-        ExtDuration=1;
+        Stim(1).ExtTimes=0;
+        Stim(1).toSelect=1;
+        Stim(1).Iext=50;
+        Stim(1).ExtDuration=1;
     end
 end
 
@@ -176,47 +207,98 @@ else
     toSave=0;
 end
 
+if isfield(options,'phase_xi')
+    xi=options.phase_xi/10;
+else
+    xi=0.025;
+end
+
+if isfield(options,'phase_dt')
+    phase_dt=options.phase_dt;
+else
+    phase_dt=0.02;
+end
+
+if isfield(options,'phase_thr')
+    thr_b=options.phase_thr;
+else
+    thr_b=1e-4;
+end
+
+if isfield(options,'save_state')
+    if isfield(options.save_state,'times')
+        savestate_times=options.save_state.times;
+    else
+        savestate_times=[];
+    end
+    if isfield(options.save_state,'filename')
+        filename_state=options.save_state.filename;
+    elseif isfield(options.savefile,'filename')
+        filename_state=options.savefile.filename;
+    else
+        filename_state='sim';
+    end
+else
+    savestate_times=[];
+end
+
+
 %% Define simulation length
 t=gpuArray(0:dt:T);
 Nt=length(t);
 
 %% Phase field and mask computation
 
-phi=computePhase(VoxelMat,res/10, 0.02,0.025,true);
-thr_b=1e-4;
+phi=computePhase(VoxelMat,res/10, phase_dt,xi,true);
 mask_phi=phi>thr_b;
-ind_in= mask_phi & not(plot_fib);
-nin=nnz(ind_in);
+
 
 %% extrapolate fibers and domain and pixel intensity
-[FV,extInd]=computeSurface(VoxelMat,res);
-fields=extrapField([f.x,f.y,f.z,domain,scalar],VoxelMat,extInd,mask_phi);
+[~,extInd]=computeSurface(VoxelMat,res);
+fields=extrapField([f.x,f.y,f.z,domain,scalar,plot_fib(VoxelMat)],VoxelMat,extInd,mask_phi);
 fx=fields(:,1);
 fy=fields(:,2);
 fz=fields(:,3);
+fib=gpuArray(fields(:,6));
+plot_fib2=false(size(VoxelMat));
+plot_fib2(mask_phi)=logical(fib(mask_phi(:)));
+ind_in= mask_phi & not(plot_fib2);
+nin=nnz(ind_in);
 domain=gpuArray(fields(ind_in(:),4));
 scalar=gpuArray(fields(ind_in(:),5));
+
 clear fields
 %% system matrix
-As=gpuArray(heartMatrixFib(phi,mask_phi,plot_fib,fx,fy,fz,Dpar,anisot_ratio,res));
+As=gpuArray(heartMatrixFib(phi,mask_phi,plot_fib2,fx,fy,fz,Dpar,anisot_ratio,res));
 %% elab purkinje system
 
 if isfield(options,'pkj')
     pkn_nodes=options.pkj.nodes;
     pkn_elem=options.pkj.elem;
-    pkn_times=options.pkj.times;
     term_mask=not(ismember(pkn_elem(:,2),pkn_elem(:,1)));
     term_ind=pkn_elem(term_mask,2);
+    term_ind=[1;sort(term_ind)];
+    distM=dist_pkj(pkn_nodes,pkn_elem);
+    if isfield(options.pkj,'CV')
+        pkj_vel=options.pkj.CV;
+    else
+        pkj_vel=340;
+    end
+    distM=distM(term_ind,term_ind)*res/pkj_vel*100;
+    term_ind=term_ind(2:end);
     term_nodes=pkn_nodes(term_ind,:);
-    term_times=pkn_times(term_ind);
-    term_map=sub2ind(size(VoxelMat),term_nodes(:,2),term_nodes(:,1),term_nodes(:,3));
+    term_map=round(sub2ind(size(VoxelMat),term_nodes(:,2),term_nodes(:,1),term_nodes(:,3)));
     tmp=zeros(size(VoxelMat));
-    tmp(term_map)=1:length(term_nodes);
+    tmp(term_map)=2:length(term_nodes)+1;
     tmp=tmp(ind_in);
+    if isfield(options.pkj,'fib_thr')
+        fib_thr=options.pkj.fib_thr;
+    else
+        fib_thr=0.4;
+    end
+    tmp(scalar>fib_thr)=0;
     term_map2=find(tmp);
     good_term=tmp(term_map2);
-    act_times=term_times(good_term);
-    Tact=Inf(size(good_term));
     clear tmp
     if isfield(options.pkj,'stimTimes')
         pkn_stim=options.pkj.stimTimes;
@@ -233,34 +315,57 @@ if isfield(options,'pkj')
     else
         pkj_duration=2;
     end
+    if isfield(options.pkj,'ant_delay')
+        ant_delay=options.pkj.ant_delay;
+    else
+        ant_delay=8;
+    end
+    if isfield(options.pkj,'retro_delay')
+        retro_delay=options.pkj.retro_delay;
+    else
+        retro_delay=3;
+    end
+    if isfield(options.pkj,'ERP')
+        ERP=options.pkj.ERP;
+    else
+        ERP=400;
+    end
 else
     pkn_stim=[];
 end
 pkn_stim_n=round(pkn_stim/dt)+1;
 
 %% Set up external stimulation
-if toSelect
-    disp('Select stimulation regions by mouse click')
-    ExtLoc=selectVolume(VoxelMat,res,5,false, plot_fib);
-end
-I_mask=zeros(size(VoxelMat));
-I_mask(ExtLoc & VoxelMat)=Iext;
-I_mask=gpuArray(I_mask(ind_in));
+for i=1:length(Stim)
+    if Stim(i).toSelect
+        disp(['Select stimulation region ', num2str(i), ' by mouse click']);
+        Stim(i).ExtLoc=selectVolume(VoxelMat,res,5,false, plot_fib);
+    end
+    I_mask=zeros(size(VoxelMat));
+    I_mask(Stim(i).ExtLoc & VoxelMat)=Stim(i).Iext;
+    Stim(i).I_mask=gpuArray(I_mask(ind_in));
 
-n_stim=length(ExtTimes);
-ind=0;
-NT=round(ExtDuration/dt)+1;
+    n_stim=length(Stim(i).ExtTimes);
 
-ext_stim=false(Nt,1);
-for j=1:n_stim
-    ind=ind+round(ExtTimes(j)/dt)+1;
-    ext_stim(ind:ind+NT)=1;
+    NT=round(Stim(i).ExtDuration/dt)+1;
+
+    Stim(i).ext_stim=false(Nt,1);
+    for j=1:n_stim
+        ind=round(Stim(i).ExtTimes(j)/dt)+1;
+        Stim(i).ext_stim(ind:ind+NT)=1;
+    end
 end
 %% Initialization
-
-Vm=gpuArray(-85*ones(nin,1));
-u=gpuArray(zeros(nin,1));
-w=gpuArray(zeros(nin,1));
+if isfield(options,'load_state')
+    state=load(options.load_state);
+    Vm=state.Vm;
+    u=state.u;
+    w=state.w;
+else
+    Vm=gpuArray(-85*ones(nin,1));
+    u=gpuArray(zeros(nin,1));
+    w=gpuArray(zeros(nin,1));
+end
 
 Ie=gpuArray(zeros(nin,1));
 
@@ -269,6 +374,7 @@ if ~isinf(visual)
     Vm_plot(ind_in)=gather(Vm);
     [FV1,extInd1]=computeSurface(plot_fib,res);
     figure;
+    [FV,extInd]=computeSurface(VoxelMat & ~plot_fib,res);
     h=PlotVoxel(FV,Vm_plot, extInd, parula,1,0);
     hold on
     PlotVoxel(FV1,plot_fib,extInd1,'k',1,0);
@@ -284,36 +390,73 @@ end
 
 if toSave
     fid=fopen(filename,'w+');
-    save(filename,'ind_in','plot_fib','VoxelMat','res');
+    save(filename,'ind_in','plot_fib','VoxelMat','res','mask_phi');
 end
+%% initializa PKJ
+if  exist('term_map2','var')
+    state=gpuArray(zeros(size(good_term)));
+    t_last=gpuArray(zeros(size(good_term)));
+    Tact=Inf(size(good_term))';
+end
+
 %% RUN SIMULATION
 
-for i=1:Nt-1
+for i=1:Nt
     dv2dt=As*Vm;
-    if ext_stim(i)
-        dv2dt=dv2dt+I_mask;
-    end
-    if ~isempty(pkn_stim)
-        if nnz(i==pkn_stim_n)
-            Tact=min(Tact,act_times);
+    for j=1:length(Stim)
+        if Stim(j).ext_stim(i)
+            dv2dt=dv2dt+Stim(j).I_mask;
         end
-        Tact=Tact-dt;
-        Ie(:)=0;
-        Ie(term_map2(Tact<0))=pkj_current;
-        Tact(Tact<-pkj_duration)=Inf;
     end
+
     [Vm,u,w]=single_step(Vm,u,w,Ie,dv2dt,domain,dt,scalar);
+
     if toSave
         if mod(i,i_save)==0
             fwrite(fid,gather(Vm),'single');
         end
     end
 
+    if ismember(dt*i,savestate_times)
+        save([filename_state '_state_' num2str(dt*i)], 'Vm','w','u');
+    end
+
+    if exist('term_map2','var')
+        active=dv2dt(term_map2)>0 & Vm(term_map2)>-20;
+        if ismember(i,pkn_stim_n)
+            Tact=min(Tact,distM(1,good_term));
+        end
+        Tact=Tact-dt;
+        [s_v,s_pkj,state,t_last]=PKJnodeFun(Tact'<0,active,t(i),state,t_last,ant_delay,retro_delay,pkj_duration,0,ERP);
+        Tact(Tact<0)=Inf;
+        Tact=min([Tact;distM(good_term(s_pkj),good_term)],[],1);
+        Ie(:)=0;
+        Ie(term_map2(s_v))=pkj_current;
+    end
     if mod(i,visual)==0
         Vm_plot(ind_in)=gather(Vm);
         h.CData=Vm_plot(extInd);
         title(num2str(dt*i))
         drawnow
+    end
+
+    if exist('term_map2','var') 
+         check_pkj=nnz(~isinf(Tact))==0 && nnz(state<3 & state>0)==0 && nnz(pkn_stim(i:end))==0;
+    else 
+        check_pkj=1;
+    end
+
+    if nnz(Vm>=-40)<5 && check_pkj
+        stop=1;
+        for j=1:length(Stim)
+            if nnz(Stim(j).ext_stim(i:end))>0
+                stop=0;
+                break;
+            end
+        end
+        if stop==1
+            break;
+        end
     end
 end
 

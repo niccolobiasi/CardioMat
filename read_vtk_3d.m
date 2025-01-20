@@ -125,6 +125,6 @@ else
     warning('No cell data found')
 end
 
-
+fclose(fid);
 
 end

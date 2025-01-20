@@ -14,7 +14,7 @@ function f_new=extrapField(f,VoxelMat,extInd,mask_phi,max_it)
 %
 %f_new=extrapField(f,VoxelMat,extInd, mask_phi,max_it) will stop the
 %extrapolation when all the voxels marked by the mask_phi matrix have a 
-% defined value for the fields and the maximum number of iteration is
+% defined value for the fields or the maximum number of iteration is
 % achieved. Default maximum number of iteration is infinite.
 
 if size(f,1)~=nnz(VoxelMat)
@@ -48,37 +48,42 @@ while nnz(isnan(f_new(mask_phi,1)))>0 && it<max_it
     end
 
     new_seed=[];
-
-    fw_y=seed(mod(seed,Ny)>0)+1;
+    
+    sel_seed=seed(mod(seed,Ny)>0);
+    fw_y=sel_seed+1;
     ToUpdate=isnan(f_new(fw_y,1));
     new_seed=[new_seed; fw_y(ToUpdate)];
-    f_new(fw_y(ToUpdate),:)=f_new(seed(ToUpdate),:);
+    f_new(fw_y(ToUpdate),:)=f_new(sel_seed(ToUpdate),:);
 
-    bw_y=seed(mod(seed-1,Ny)>0 & seed>1)-1;
+    sel_seed=seed(mod(seed-1,Ny)>0 & seed>1);
+    bw_y=sel_seed-1;
     ToUpdate=isnan(f_new(bw_y,1));
     new_seed=[new_seed; bw_y(ToUpdate)];
-    f_new(bw_y(ToUpdate),:)=f_new(seed(ToUpdate),:);
+    f_new(bw_y(ToUpdate),:)=f_new(sel_seed(ToUpdate),:);
 
-    fw_x=seed(mod(seed-1,Nx*Ny)<Ny*(Nx-1))+Ny;
+    sel_seed=seed(mod(seed-1,Nx*Ny)<Ny*(Nx-1));
+    fw_x=sel_seed+Ny;
     ToUpdate=isnan(f_new(fw_x,1));
     new_seed=[new_seed; fw_x(ToUpdate)];
-    f_new(fw_x(ToUpdate),:)=f_new(seed(ToUpdate),:);
+    f_new(fw_x(ToUpdate),:)=f_new(sel_seed(ToUpdate),:);
 
-    bw_x=seed(mod(seed-1,Nx*Ny)>=Ny)-Ny;
+    sel_seed=seed(mod(seed-1,Nx*Ny)>=Ny);
+    bw_x=sel_seed-Ny;
     ToUpdate=isnan(f_new(bw_x,1));
     new_seed=[new_seed; bw_x(ToUpdate)];
-    f_new(bw_x(ToUpdate),:)=f_new(seed(ToUpdate),:);
+    f_new(bw_x(ToUpdate),:)=f_new(sel_seed(ToUpdate),:);
 
-    fw_z=seed(seed<=nel-Ny*Nx)+Ny*Nx;
+    sel_seed=seed(seed<=nel-Ny*Nx);
+    fw_z=sel_seed+Ny*Nx;
     ToUpdate=isnan(f_new(fw_z,1));
     new_seed=[new_seed; fw_z(ToUpdate)];
-    f_new(fw_z(ToUpdate),:)=f_new(seed(ToUpdate),:);
+    f_new(fw_z(ToUpdate),:)=f_new(sel_seed(ToUpdate),:);
 
-    bw_z=seed(seed>Ny*Nx)-Ny*Nx;
-    ToUpdate=bw_z>0 & isnan(f_new(bw_z,1));
+    sel_seed=seed(seed>Ny*Nx);
+    bw_z=sel_seed-Ny*Nx;
+    ToUpdate=isnan(f_new(bw_z,1));
     new_seed=[new_seed; bw_z(ToUpdate)];
-    f_new(bw_z(ToUpdate),:)=f_new(seed(ToUpdate),:);
-
+    f_new(bw_z(ToUpdate),:)=f_new(sel_seed(ToUpdate),:);
 
     seed=new_seed;
 

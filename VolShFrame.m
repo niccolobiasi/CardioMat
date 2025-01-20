@@ -28,7 +28,7 @@ ind_nofib=VoxelMat & ~plot_fib;
 Vm=fread(fid,sizeVm,'single');
 
 
-idx=reshape(extrapField((1:length(Vm))',ind_in,extInd,[],1),size(VoxelMat));
+idx=reshape(extrapField((1:length(Vm))',ind_in,extInd,[],10),size(VoxelMat));
 idx_toadj=~isnan(idx) & ~ind_in;
 idx=idx(idx_toadj);
 vol_col=zeros(size(VoxelMat));

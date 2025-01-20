@@ -1,0 +1,82 @@
+UPDATE 20/01/2025
+
+Update overview: the purkinje network is now simulated with an eikonal model
+allowing for anterograde and retrograde propagation. Purkinje-muscular
+junctions are now modeled with a finite state machine.
+GPU memory requirements to run models are significantly reduced.
+We added functions for atrial models construction.
+
+
+1) runSimulation: 
+    - Purkinje simulation with Eikonal model
+    - added options for phase field compuation
+    - added save_state and load_state options
+    - added support for multiple stimulations
+    - improved fibrosis management
+    - removal of PMJ in the border zone.
+    - stop simulation when all tissue is at rest and no further stimulation is programmed
+
+2) ahaSegments: added function to compute AHA segments and their centroids
+
+3) colormaps.mat: added custom colormaps
+
+4) computeLats: minor updates (added start and end time definitions)
+
+5) computePhase: reduced memory requirements for phase field computation
+
+6) computeRotational: added function to compute rotational coordinate in the ventricles
+
+7) createPurkinje: reordered purkinje nodes in such a way the first node is the root node
+
+8)createVideo: improved documentation and usage.
+
+9) dist_pkj: added function to compute distances between purkinje nodes along the tree
+
+10) extractLat: added start and end times definition 
+
+11) extrapField: improved readibility
+
+12) HeartMatrixFib: improved memory management and efficiency of the code
+
+13) laplaceMatrix: modified to compute laplace matrix on an irregular geometry
+
+14) PKJnodeFun: added finite state machine function to model Purkinje muscular junction
+
+15) plotFrame: improved visualization and controls.
+
+16) single_step: updated ionic model
+
+17) VolSh: fix bugs at the boundary by using a larger extrapolation
+
+18) VolShFrame: see VolSh
+
+19) vtk2vox: added TOL parameter; added control for disconnected voxels;
+    changed 3D image color.
+
+20) selectSurface, selectVolume, selectPoint: improved user interface with cutplane
+
+21) Authors list updated
+
+22) PlotVoxelE: added function for interactive visualization of 3D voxelized images
+
+23) DefineCP: improved point selection with superimposed fibrosis
+
+24) lat2shell: faster interpolation, core scar can be represented in white.
+
+25) tagAtria: added function to tag atrial surfaces.
+
+26) computeFieldsLA: added function to compute distance fields on right atrium
+
+27) computeFieldsLA: added function to compute distance fields on left atrium
+
+28) computeDistanceFields: added function to compute transmural and transatrial
+    coordinates in biatrial geometries. The function also computes distance 
+    fields useful for the  assignment of fiber orientation
+
+29) generateFiberLA: added function to generate cardiac fiber in the left atrium
+
+30) generateFiberRA: added function to generate cardiac fiber in the right atrium
+
+31) generateFiberAtria: added function to generate cardiac fiber in biatrial geometries
+
+32) read_vtk and read_vtk_3d: close file at the end of reading.

@@ -40,7 +40,7 @@ y=Ymin:res:Ymax;
 z=Zmin:res:Zmax;
 TR=triangulation(vtk_elem,vtk_points);
 F=freeBoundary(TR);
-VoxelMat=inpolyhedron(F,vtk_points,x,y,z);
+VoxelMat=inpolyhedron(F,vtk_points,x,y,z,'tol',res/2);
 seed=find(VoxelMat);
 seed=seed(randi(length(seed)));
 eik1=solveEikonal(VoxelMat,seed);
@@ -52,14 +52,29 @@ if nargout>1
     else
         vtk_label=VTK_DATA.tag;
     end
-    vox_label=NaN(size(VoxelMat));
+    vox_label=nan(size(VoxelMat));
     [gridx,gridy,gridz]=meshgrid(x,y,z);
     queryPoints=[gridx(VoxelMat) gridy(VoxelMat) gridz(VoxelMat)];
     resElem=pointLocation(TR,queryPoints);
-    vox_label(VoxelMat)=vtk_label(resElem);
+    resElem_plot=zeros(size(VoxelMat));
+    resElem_plot(VoxelMat)=resElem;
+    bad=isnan(resElem_plot);
+    ind_bad=find(bad);
+    [Ny, Nx, ~]=size(VoxelMat);
+    while not(isempty(ind_bad))
+        for ii=[1 -1 Ny -Ny Ny*Nx -Ny*Nx]
+            upt_bad=not(bad(ind_bad+ii)) & VoxelMat(ind_bad+ii);
+            upt=ind_bad(upt_bad);
+            resElem_plot(upt)=resElem_plot(upt+ii);
+            bad=isnan(resElem_plot);
+            ind_bad=find(bad);
+        end
+    end
+    vox_label(VoxelMat)=vtk_label(resElem_plot(VoxelMat));
+
     figure;
     PlotVoxel(FV,vox_label,extInd);
 else
     figure;
-    PlotVoxel(FV,VoxelMat,extInd,'r');
+    PlotVoxel(FV,VoxelMat,extInd,[0.8500 0.3250 0.0980]);
 end

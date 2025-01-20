@@ -169,14 +169,11 @@ function [Vm_array, u_array, w_array]=single_step(Vm,u,w,Ie,dv2dt,domain,dt,scal
             um = 0.58;
 
         end
-        fact=1-scalar/2;
-        fAct=1-scalar/4;
-        A0=A0*fAct;
-        A1=A1*fAct;
+        fact=1-scalar/4;
+        A0=A0*fact;
+        A1=A1*fact;
         e110=e110*fact;
         e120=e120*fact;
-        e21=e21*fact;
-        e22=e22*fact;
         ew0=ew0*fact;
         dw0=dw0/fact;
         gamma=gamma*fact;

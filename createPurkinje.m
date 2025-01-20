@@ -17,7 +17,8 @@ function [nodes,elem,act_times]=createPurkinje(VoxelMat,transmural,apicobasal,op
 %- maxHeight: maximum apicobasal coordinate where the terminal nodes can
 %lie (default=0.9);
 %- pknDiff: kernel size used to create the Purkinje region. It determines how
-%far segments of purkinje tree can be from the endocardial surface.
+%far segments of purkinje tree can be from the endocardial surface
+%(default=5)
 %- plot: if true generates a plot of the Purkinje tree.
 %
 %[nodes,elem,act_times]=createPurkinje(VoxelMat,transmural,apicobasal,options)
@@ -197,7 +198,13 @@ elem=(1:2*Nel)';
 elem=elem(Ic);
 elem=[elem(1:Nel) elem((1+Nel):2*Nel)];
 root_node=find(nodes(:,1)==root(1) & nodes(:,2)==root(2) & nodes(:,3)==root(3));
-curr_node=root_node;
+tmp=nodes(1,:);
+nodes(1,:)=nodes(root_node,:);
+nodes(root_node,:)=tmp;
+tmp=elem;
+elem(tmp==root_node)=1;
+elem(tmp==1)=root_node;
+curr_node=1;
 act_times=NaN(length(nodes),1);
 act_times(curr_node)=0;
 while nnz(isnan(act_times))

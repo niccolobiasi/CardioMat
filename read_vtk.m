@@ -117,6 +117,6 @@ else
     warning('No data points found')
 end
 
-
+fclose(fid);
 
 end
