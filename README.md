@@ -1,3 +1,7 @@
+<p align="center">
+  <img width="300" src="https://github.com/niccolobiasi/CardioMat/blob/main/logo_cardiomat_low.png">
+</p>
+
 # CardioMat
 A Matlab toolbox for cardiac electrophysiology simulations
 
