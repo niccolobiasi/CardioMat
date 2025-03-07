@@ -16,7 +16,7 @@ if nargin<6
 end
 [f_la,s_la,n_la]=generateFiberLA(LA,fields_LA,par_la);
 
-[f_ra,s_ra,n_ra]=generateFiberLA(RA,fields_RA,par_ra);
+[f_ra,s_ra,n_ra]=generateFiberRA(RA,fields_RA,par_ra);
 
 
 f.x=zeros(nnz(VoxelMat),1);
