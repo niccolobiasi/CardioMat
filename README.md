@@ -16,12 +16,12 @@ CardioMat is a Matlab toolbox for cardiac electrophysiology simulation focused o
 - Generation of Purkinje network (createPurkinje.m): create a Purkinje network based on ventricular coordinates with a constrained optimization method.
 -  Run simulation (runSimulation.m): runs monodomain simulations with the options provided by the users.
 
-A similar pipeline for atrial models is available. See the example_atria script for details (available at https://doi.org/10.5281/zenodo.14699421).
+A similar pipeline for atrial models is available. See the example_atria script for details (available at [https://doi.org/10.5281/zenodo.14699421](https://doi.org/10.5281/zenodo.14699420)).
 Methods are described in details in the associated publication (https://doi.org/10.1016/j.compbiomed.2024.109529).
 
 ## Usage
 
-Each function is provided with an help documentation explaining the usage of the function. 3 example scripts showing the use of CardioMat in different scenarios are available at https://doi.org/10.5281/zenodo.14699421.  
+Each function is provided with an help documentation explaining the usage of the function. 3 example scripts showing the use of CardioMat in different scenarios are available at [https://doi.org/10.5281/zenodo.14699421](https://doi.org/10.5281/zenodo.14699420).  
 Simulation results are saved into a binary file and can be visualized with plotFrame.m and VolShFrame.m functions. The former uses standard Matlab figures, the latter is based on volshow() Matlab command and uses a viewer3d. 
 
 ## Requirements
