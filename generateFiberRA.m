@@ -4,61 +4,61 @@ function [f,s,n]=generateFiberRA(RA, fields_RA, par)
 % Piersanti et al. 2021). The function uses the distance fields fields_RA
 % as computed by computeFieldsRA. Optionally, a par structure can be input
 % defining the parameter values for bundles selection with subfields:
-%   - tau_tv (default:0.9)
-%   - tau_icv (default: 0.85)
-%   - tau_scv (default: 0.3)
-%   - tau_ct_p (default: 0.55)
-%   - tau_ct_m (default: 0.6)
-%   - tau_ib (default: -0.25)
-%   - tau_ras (default: -0.1)
-%   - tau_raw (default: 0.6)
+%   - tau_tv (default:0.95)
+%   - tau_icv (default: 0.95)
+%   - tau_scv (default: 0.05)
+%   - tau_ct_p (default: -0.05)
+%   - tau_ct_m (default: -0.13)
+%   - tau_ib (default: -0.1)
+%   - tau_ras (default: 0.13)
+%   - tau_raw (default: 0.55)
 
 if isfield(par,'tau_tv')
     tau_tv=par.tau_tv;
 else
-    tau_tv=0.9;
+    tau_tv=0.95;
 end
 
 if isfield(par,'tau_icv')
     tau_icv=par.tau_icv;
 else
-    tau_icv=0.85;
+    tau_icv=0.95;
 end
 
 if isfield(par,'tau_scv')
     tau_scv=par.tau_scv;
 else
-    tau_scv=0.3;
+    tau_scv=0.05;
 end
 
 if isfield(par,'tau_ct_p')
     tau_ct_p=par.tau_ct_p;
 else
-    tau_ct_p=0.55;
+    tau_ct_p=-0.05;
 end
 
 if isfield(par,'tau_ct_m')
     tau_ct_m=par.tau_ct_m;
 else
-    tau_ct_m=0.6;
+    tau_ct_m=-0.13;
 end
 
 if isfield(par,'tau_ib')
     tau_ib=par.tau_ib;
 else
-    tau_ib=-0.25;
+    tau_ib=0.1;
 end
 
 if isfield(par,'tau_ras')
     tau_ras=par.tau_ras;
 else
-    tau_ras=-0.1;
+    tau_ras=0.13;
 end
 
 if isfield(par,'tau_raw')
     tau_raw=par.tau_raw;
 else
-    tau_raw=0.6;
+    tau_raw=0.55;
 end
 
 phi_r=fields_RA{1};
@@ -75,21 +75,21 @@ tmx=S*phi_r(RA);
 r_r_x=S*psi_r_ra(RA);
 v_r_x=S*psi_v_ra(RA);
 ab_r_x=S*psi_ab_ra(RA);
-w_r_x=S*psi_v_ra(RA);
+w_r_x=S*psi_w_ra(RA);
 
 S=gradMat(RA,'y');
 tmy=S*phi_r(RA);
 r_r_y=S*psi_r_ra(RA);
 v_r_y=S*psi_v_ra(RA);
 ab_r_y=S*psi_ab_ra(RA);
-w_r_y=S*psi_v_ra(RA);
+w_r_y=S*psi_w_ra(RA);
 
 S=gradMat(RA,'z');
 tmz=S*phi_r(RA);
 r_r_z=S*psi_r_ra(RA);
 v_r_z=S*psi_v_ra(RA);
 ab_r_z=S*psi_ab_ra(RA);
-w_r_z=S*psi_v_ra(RA);
+w_r_z=S*psi_w_ra(RA);
 
 norm_et=sqrt(tmx.^2+tmy.^2+tmz.^2);
 etx=tmx./(norm_et);
@@ -131,7 +131,7 @@ ky(cind)=ab_r_y(cind);
 kz(cind)=ab_r_z(cind);
 
 
-cind=~ind1 & ind2 & ~ind4 & ind5;
+cind=~ind1 & ind2 & ~ind3 & ~ind4 & ind5;
 kx(cind)=v_r_x(cind);
 ky(cind)=v_r_y(cind);
 kz(cind)=v_r_z(cind);
@@ -139,7 +139,7 @@ kz(cind)=v_r_z(cind);
 ind6= psi_w_ra(RA)<=tau_ib;
 
 
-cind=~ind1 & ind2 & ~ind4 & ~ind5 & ind6;
+cind=~ind1 & ind2 & ~ind3 & ~ind4 & ~ind5 & ind6;
 kx(cind)=v_r_x(cind);
 ky(cind)=v_r_y(cind);
 kz(cind)=v_r_z(cind);
@@ -147,12 +147,12 @@ kz(cind)=v_r_z(cind);
 
 ind7=psi_w_ra(RA)>=tau_ras;
 
-cind=~ind1 & ind2 & ~ind4 & ~ind5 & ~ind6 & ind7;
+cind=~ind1 & ind2 & ~ind3 & ~ind4 & ~ind5 & ~ind6 & ind7;
 kx(cind)=r_r_x(cind);
 ky(cind)=r_r_y(cind);
 kz(cind)=r_r_z(cind);
 
-cind=~ind1 & ind2 & ~ind4 & ~ind5 & ~ind6 & ~ind7;
+cind=~ind1 & ind2 & ~ind3 & ~ind4 & ~ind5 & ~ind6 & ~ind7;
 kx(cind)=w_r_x(cind);
 ky(cind)=w_r_y(cind);
 kz(cind)=w_r_z(cind);
@@ -163,7 +163,7 @@ kx(cind)=v_r_x(cind);
 ky(cind)=v_r_y(cind);
 kz(cind)=v_r_z(cind);
 
-ind8=psi_v_ra(RA)>0;
+ind8=psi_w_ra(RA)>=0;
 
 cind=~ind1 & ~ind2 & ~ind5 & ind8;
 kx(cind)=r_r_x(cind);
