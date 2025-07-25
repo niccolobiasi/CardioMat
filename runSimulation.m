@@ -10,6 +10,13 @@ function runSimulation(VoxelMat,options)
 % size ninX1 with nin=nnz(VoxelMat). domain parameters define a label for
 % each voxel in the geometry (default =1).
 %
+% - model: a string array defining the ionic model. The default model is
+% Biasi_Tognetti. Other possible choice are:
+%   - TNNP_2004
+%   - CRN_1998
+%   - TP_2006
+%   - Custom model (see MyModel.m for a template function).
+%
 % - fib: is a matrix of the same size of VoxelMat indicating fibrotic\scar
 % voxels (default=0);
 %
@@ -201,7 +208,8 @@ end
 
 if isfield(options,'savefile')
     filename=options.savefile.filename;
-    i_save=round(options.savefile.dt/dt);
+    dt_save=options.savefile.dt;
+    i_save=round(dt_save/dt);
     toSave=1;
 else
     toSave=0;
@@ -242,6 +250,11 @@ else
     savestate_times=[];
 end
 
+if isfield(options,'model')
+    model=options.model;
+else
+    model='Biasi_Tognetti';
+end
 
 %% Define simulation length
 t=gpuArray(0:dt:T);
@@ -356,15 +369,21 @@ for i=1:length(Stim)
     end
 end
 %% Initialization
+[Vm0, state_model0]=feval(model);
+nVar=length(state_model0);
 if isfield(options,'load_state')
-    state=load(options.load_state);
-    Vm=state.Vm;
-    u=state.u;
-    w=state.w;
+    saved_state=load(options.load_state);
+    Vm=saved_state.Vm;
+    state_model=saved_state.state_model;
+    if length(state_model)~=nVar
+        error('number of loaded state variables do not correspond to the selected model');
+    end
 else
-    Vm=gpuArray(-85*ones(nin,1));
-    u=gpuArray(zeros(nin,1));
-    w=gpuArray(zeros(nin,1));
+    Vm=gpuArray(Vm0*ones(nin,1));
+    state_model=cell(nVar,1);
+    for ii=1:nVar
+        state_model{ii}=state_model0{ii}*ones(nin,1);
+    end
 end
 
 Ie=gpuArray(zeros(nin,1));
@@ -373,7 +392,8 @@ if ~isinf(visual)
     Vm_plot=NaN(size(VoxelMat));
     Vm_plot(ind_in)=gather(Vm);
     [FV1,extInd1]=computeSurface(plot_fib,res);
-    figure;
+    hf=figure;
+    hf.MenuBar='figure';
     [FV,extInd]=computeSurface(VoxelMat & ~plot_fib,res);
     h=PlotVoxel(FV,Vm_plot, extInd, parula,1,0);
     hold on
@@ -390,7 +410,7 @@ end
 
 if toSave
     fid=fopen(filename,'w+');
-    save(filename,'ind_in','plot_fib','VoxelMat','res','mask_phi');
+    save(filename,'ind_in','plot_fib','VoxelMat','res','mask_phi','dt_save');
 end
 %% initializa PKJ
 if  exist('term_map2','var')
@@ -409,7 +429,7 @@ for i=1:Nt
         end
     end
 
-    [Vm,u,w]=single_step(Vm,u,w,Ie,dv2dt,domain,dt,scalar);
+    [Vm,state_model]=feval(model,Vm,state_model,Ie,dv2dt,domain,dt,scalar);
 
     if toSave
         if mod(i,i_save)==0
@@ -418,7 +438,7 @@ for i=1:Nt
     end
 
     if ismember(dt*i,savestate_times)
-        save([filename_state '_state_' num2str(dt*i)], 'Vm','w','u');
+        save([filename_state '_state_' num2str(dt*i)], 'Vm','state_model');
     end
 
     if exist('term_map2','var')

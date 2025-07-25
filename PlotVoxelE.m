@@ -14,7 +14,8 @@ function PlotVoxelE(VoxelMat,Vm_plot,res, plot_fib,cmap,alpha,addLight)
 %
 %
 
-figure;
+hf=figure;
+hf.MenuBar='figure';
 
 if size(Vm_plot,2)==1
     tmp=Vm_plot;

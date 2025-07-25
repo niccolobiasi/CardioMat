@@ -21,7 +21,8 @@ grx=gridx(VoxelMat);
 gry=gridy(VoxelMat);
 grz=gridz(VoxelMat);
 
-figure;
+hf=figure;
+hf.MenuBar='figure';
 h=PlotVoxel(FV,VoxelMat,extInd,'b');
 hold on
 handle_scatter=scatter3([],[],[],'filled','o','MarkerFaceColor','red');

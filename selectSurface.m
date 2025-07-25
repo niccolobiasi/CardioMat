@@ -27,7 +27,8 @@ R2=R^2;
 
 selected_points =false(length(ind_surf),1);
 plot_selected=false(size(VoxelMat));
-figure;
+hf=figure;
+hf.MenuBar='figure';
 h=PlotVoxel(FV,plot_selected,extInd);
 extInd_cut=extInd;
 clim([0 1])

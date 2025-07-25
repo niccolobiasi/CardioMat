@@ -1,3 +1,52 @@
+UPDATE 25/07/2025
+
+Update overview: CardioMat now allows for the use of different ionic models 
+in the monodomain model. 3 ionic models are included (TNNP_2004, TP_2006, 
+CRN_1998) togheter with a template for the definition of custom ionic models.
+GPU management of general ionic models is included, improved, and tested. 
+CardioMat interactive function were updated to be compatible with Matlab 
+2025a (restore of original Matlab Figure Menu).
+
+1) AUTHORS: updated authors' list
+
+2) bench_model: added function to test ionic model in single cell before the
+    the use in monodomain model
+
+3) Biasi_Tognetti: new function replacing "single_step". This function 
+    implements the Biasi-Tognetti model that was already available in
+    CardioMat.
+
+4) CRN_1998: added Courtemanche-Ramirez-Nattel ionic model for atrial action
+    potential.
+
+5) MyModel: added documented template for definition of custom ionic models
+
+6) plotFrame: enabled membrane potential plot in click point. The frame
+    number in the figure title has been substituted with the time instant.
+    Restored previous release Matlab Figure Menu.
+
+7) PlotVoxelE: restored previous release Matlab Figure Menu.
+
+8) runSimulation: added support for different ionic models. A new options 
+    subfield (options.model) can be passed to the function defining the ionic 
+    model that must be used in the mondomain solver. Restored previous
+    release Matlab Figure Menu for the visualization of results.
+
+9) selectMPoint: restored previous release Matlab Figure Menu.
+
+10) selectPoint: restored previous release Matlab Figure Menu.
+
+11) selectSurface: restored previous release Matlab Figure Menu.
+
+12) selectVolume: restored previous release Matlab Figure Menu.
+
+13) TNNP_2004: added TenTusscher-Noble-Noble-Panfilov model for ventricular
+    action potential.
+
+14) TP_2006: added TenTusscher-Panfilov model (2006) for ventricular
+    action potential.
+
+
 UPDATE 20/01/2025
 
 Update overview: the purkinje network is now simulated with an eikonal model

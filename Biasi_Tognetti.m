@@ -1,34 +1,34 @@
-function [Vm_array, u_array, w_array]=single_step(Vm,u,w,Ie,dv2dt,domain,dt,scalar)
-% This function defines the ionic model to use, that in our case is the 
-% Biasi and Tognetti model. Currently, the possibility of using other models
-% is not implemented, but it will be implemented soon. 
-% Vm,u, and w are the state variable of the model. Ie is the external
-% current and dv2dt is the diffusive current. domain defines which
-% paramater set should be used:
-%1->epicardial
-%2->endocardial
-%3->midcardial
-%4->atrial
-%5->Brugada coved type AP
-%6->Brugada lost dome type AP
-% any other -> epicardial
+function [Vm,state]=Biasi_Tognetti(Vm,state,Ie,dv2dt,domain,dt,scalar)
+% This function implements the Biasi-Tognetti model for the CardioMat 
+% toolbox. 7 different parameters sets are reported below:
+%   -Epicardium (domain=1)
+%   -Endocardium (domain=2)
+%   -Midcardium (domain=3)
+%   -Atria (domain=4)
+%   -Brugada coved-type (domain=5)
+%   -Brugada saddleback-type (domain=6)
 %
-%dt is the temporal resolution. teh scalar input represent the normalized
-%pixelintensity that could be used to modulate EP properties of the model.
-% The function runs on GPU.
+% The parameters for each region can be modified directly inside the
+% function. Additional parameter sets associated to different domain
+% numbers can be added. Further details on this model are given in:
+% https://doi.org/10.1371/journal.pone.0259066
+% https://doi.org/10.1109/ACCESS.2022.3222830
+% https://doi.org/10.1038/s41598-022-12239-9
 
-[Vm_array, u_array,w_array]=arrayfun(@single_step_par,Vm,u,w,Ie,dv2dt,domain,scalar);
 
+if nargin==0
+    Vm=-85; %if called without arguments returns the default inital conditions
+    u=0;
+    w=0;
+else
+    [Vm,u,w]=arrayfun(@Biasi_Tognetti_step,Vm,state{1},state{2},Ie,dv2dt,domain,scalar);
+end
 
-    function [Vm,u,w]=single_step_par(Vm,u,w,Ie,dv2dt,region,scalar)
-       
-        if isnan(Vm)
-            Vm = NaN;
-            u  = NaN;
-            w  = NaN;
-            return
-        end
+state{1}=u;
+state{2}=w;
 
+    function [Vm,u,w]=Biasi_Tognetti_step(Vm,u,w,Ie,dv2dt,region,scalar)
+        
         %MODEL PARAMETERS
         if region ==2
             %ENDOCARDIUM
@@ -145,6 +145,11 @@ function [Vm_array, u_array, w_array]=single_step(Vm,u,w,Ie,dv2dt,domain,dt,scal
             g0 = 0.1;
             um = 0.58;
 
+        % elseif region==7
+        %     NEW PARAMETER SET
+        % 
+        % 
+
         else
             %EPICARDIUM
             A0 = 135;
@@ -197,7 +202,7 @@ function [Vm_array, u_array, w_array]=single_step(Vm,u,w,Ie,dv2dt,domain,dt,scal
         Ito=c3*w*vr*su;
 
         %compute derivatives
-        dv2dt=dv2dt-k*g.*(Iexc+Irec+Ito)+Ie;
+        dv2dt=dv2dt-k*g*(Iexc+Irec+Ito)+Ie;
         dw=dw0/su;
         if dw>1000
             dw=1000;

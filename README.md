@@ -14,7 +14,7 @@ CardioMat is a Matlab toolbox for cardiac electrophysiology simulation focused o
 - Computation of ventricular coordinates (computeUVC.m): computes ventricular coordinates (apicobasal, transmural, transventricular) based on surface labels and user-selection of the apex of the ventricles.
 - Generation of fiber orientation (generateFibers.m): generates fiber orientation with a rule-based method starting from ventricular coordinates.
 - Generation of Purkinje network (createPurkinje.m): create a Purkinje network based on ventricular coordinates with a constrained optimization method.
--  Run simulation (runSimulation.m): runs monodomain simulations with the options provided by the users.
+- Run simulation (runSimulation.m): runs monodomain simulations completely on GPU with the options provided by the users. For a complete list of the user-selectable options see the runSimulation help documentation. This also include a list of the currently available ionic models.
 
 A similar pipeline for atrial models is available. See the example_atria script for details (available at [https://doi.org/10.5281/zenodo.14699421](https://doi.org/10.5281/zenodo.14699420)).
 Methods are described in details in the associated publication (https://doi.org/10.1016/j.compbiomed.2024.109529).

@@ -38,7 +38,8 @@ plot_selected=false(size(VoxelMat));
 
 [FV_sel,extInd_sel]=computeSurface(ind_sel,res);
 [FV_fib,extInd_fib]=computeSurface(plot_fib & VoxelMat,res);
-figure;
+hf=figure;
+hf.MenuBar='figure';
 h=PlotVoxel(FV_sel,plot_selected,extInd_sel);
 extInd_sel_cut=extInd_sel;
 clim([0 1])
