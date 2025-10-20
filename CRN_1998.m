@@ -271,7 +271,8 @@ state{20}=w;
 
 
         % Membranepotential update
-        Vm = Vm+dt*(-Iion/Cm+Ie+dv2dt);
+        dv2dt=-Iion/Cm+Ie+dv2dt;
+        Vm = Vm+dt*dv2dt;
 
         % Gating variabls update
         m=minf+(m-minf)*exp(-dt/taum);

@@ -224,7 +224,8 @@ state{16}=g;
 
         % Vm update
         Iion=INa+IK1+Ito+IKr+IKs+ICaL+INaCa+INaK+IpCa+IpK+IbCa+IbNa;
-        Vm=dt*(dv2dt+Ie-Iion)+Vm;
+        dv2dt=dv2dt+Ie-Iion;
+        Vm=dt*dv2dt+Vm;
 
         % Rush-Larsen gate variable updates
         m=m_inf+(m-m_inf)*exp(-dt/tau_m);
