@@ -1,4 +1,4 @@
-function [Vm,state]=TNNP_2004(Vm,state,Ie,dv2dt,domain,dt,scalar)
+function [Vm,state,dv2dt]=TNNP_2004(Vm,state,Ie,dv2dt,domain,dt,scalar)
 % This function implements the TenTusscher-Noble-Noble-Panfilov (TNNP) 
 % model (https://doi.org/10.1152/ajpheart.00794.2003) for the CardioMat 
 % toolbox. Epicardial (domain=1), endocardial (domain=2), and midmyocardial
@@ -23,7 +23,7 @@ if nargin==0
     Xr2 = 1;
     g = 1;
 else
-    [Vm,Nai,Cai,CaSR,Ki,m,h,j,d,f,fCa,s,r,Xs,Xr1,Xr2,g]=...
+    [Vm,Nai,Cai,CaSR,Ki,m,h,j,d,f,fCa,s,r,Xs,Xr1,Xr2,g,dv2dt]=...
         arrayfun(@TNNP_step,Vm,state{1},state{2},state{3},state{4},state{5},...
         state{6},state{7},state{8},state{9},state{10},state{11},state{12},...
         state{13},state{14},state{15},state{16},Ie,dv2dt,domain,scalar);
@@ -47,7 +47,7 @@ state{14}=Xr1;
 state{15}=Xr2;
 state{16}=g;
 
-    function [Vm,Nai,Cai,CaSR,Ki,m,h,j,d,f,fCa,s,r,Xs,Xr1,Xr2,g]=TNNP_step(Vm,Nai,Cai,CaSR,Ki,m,h,j,d,f,fCa,s,r,Xs,Xr1,Xr2,g,Ie,dv2dt,region,scalar)
+    function [Vm,Nai,Cai,CaSR,Ki,m,h,j,d,f,fCa,s,r,Xs,Xr1,Xr2,g,dv2dt]=TNNP_step(Vm,Nai,Cai,CaSR,Ki,m,h,j,d,f,fCa,s,r,Xs,Xr1,Xr2,g,Ie,dv2dt,region,scalar)
 
         R=8314.3; %J*K^(-1)*Mol^(-1)
         T=310;	%K

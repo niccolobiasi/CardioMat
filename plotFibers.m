@@ -39,6 +39,11 @@ else
     lineWidth=2;
 end
 
+if length(transmural)~=numel(VoxelMat) && length(transmural)==nnz(VoxelMat)
+    tmp=nan(numel(VoxelMat),1);
+    tmp(VoxelMat(:))=transmural;
+    transmural =tmp;
+end
 
 
 [~,extInd]=computeSurface(VoxelMat,res);

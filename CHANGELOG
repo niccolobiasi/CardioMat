@@ -1,3 +1,94 @@
+UPDATE 20/10/2025
+
+Update overview: CardioMat now implements a pipeline for whole heart cardiac
+electrophysiology simulations. This include the creation of atrial and
+ventricular models, as in previous version, and connecting the atria and the
+His-Purkinje system with a model of the atrioventricular node.
+Specific visualization functions for whole heart models are now available.
+An error in the management of PMJ retrograde conduction was
+introduced with the last update, and has now been fixed. 
+CardioMat now also allows computation of extracellular fields by assuming 
+the heart tissue to be immersed in an infinite homogeneous conductor.
+
+1) adas2vox: removed cloned code by using cleanGeometry function.
+
+2) AVnodeFun: function implementing atrioventricular node model with a 
+    finite state machine.
+
+3) Biasi_Tognetti: added dv2dt as last model output.
+
+4) cleanGeometry: added function to remove isolated voxels from the geometry.
+
+5) computePhase: removed unused variables.
+
+6) computeUVC: changed variables name for consistency between functions.
+
+7) createVideo: added video resolution as input parameters. Time resolution
+is now saved in the .mat file of the simulations, thus this input has been 
+removed.
+
+8) createVideo_wh: added function equivalent to createVideo for whole-heart
+models.
+
+9) CRN_1998: added dv2dt as last model output.
+
+10) generateFibers: Now it accepts transmural input also as a vector with
+length equal to nnz(VoxelMat).
+
+11) heartMatrixFib: updated documentation.
+
+12) insertAVN: added function to attach a user selected AVN point at the 
+beginning of the Purkinje tree. The AVN point is selected from the atria.
+
+13) LFvector: added function to assemble the lead field vectors in the
+assumption of infinite homogeneous volume conductor. 
+
+14) MyModel:  added dv2dt as last model output.
+
+15) PKJnodeFun: removed development comments.
+
+16) plotFibers: Now it accepts transmural input also as a vector with
+length equal to nnz(VoxelMat).
+
+17) plotFibers_wh: added function equivalent to plotFibesr for whole-heart
+models (to visualize whole heart fibers).
+
+18) plotFrame: added time instant in the figure title.
+
+19) plotFrame_wh: added function equivalent to plotFibers for whole-heart
+models (to visualize whole heart simulations interactively).
+
+20) plotPurkinje_wh: added function equivalent to plotPurkinje for whole-heart
+models (to visualize AVN and His-Purkinje system on the whole heart).
+
+21) PlotVoxelE: solved colormap bug introduced with MATLAB R2025a.
+
+22) runSimulation:
+    - An additional delay at the level of the right and/ left bundle branches
+        can be defined.
+    - Save and load state functionalities now consider also the His-Purkinje
+        network states.
+    - added dv2dt as output of the model function for correct activation of 
+        the PMJ.
+    - Computation of extracellular potential by assuming infinite homogeneous
+        conductor is now available (type help runSimulation for parameter
+        details).
+    
+23) runSimulation_wh: added function for whole heart cardiac electrophysiology
+    simulations. Type help runSimulation_wh for a complete list of user-defined
+    parameters
+
+24) TNNP_2004: added dv2dt as last model output.
+
+25) TP_2006: added dv2dt as last model output.
+
+26) VolShFrame: now displays current time in the command window.
+
+27) VolShFrame_wh: added function equivalent to VolShFrame for whole-heart
+models (to visualize whole heart simulations in the 3D MATLAB viewer).
+
+28) removed cloned code by using cleanGeometry function.
+
 UPDATE 25/07/2025
 
 Update overview: CardioMat now allows for the use of different ionic models 
@@ -58,7 +149,7 @@ We added functions for atrial models construction.
 
 1) runSimulation: 
     - Purkinje simulation with Eikonal model
-    - added options for phase field compuation
+    - added options for phase field computaion
     - added save_state and load_state options
     - added support for multiple stimulations
     - improved fibrosis management

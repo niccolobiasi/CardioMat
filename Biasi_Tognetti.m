@@ -1,4 +1,4 @@
-function [Vm,state]=Biasi_Tognetti(Vm,state,Ie,dv2dt,domain,dt,scalar)
+function [Vm,state,dv2dt]=Biasi_Tognetti(Vm,state,Ie,dv2dt,domain,dt,scalar)
 % This function implements the Biasi-Tognetti model for the CardioMat 
 % toolbox. 7 different parameters sets are reported below:
 %   -Epicardium (domain=1)
@@ -21,13 +21,13 @@ if nargin==0
     u=0;
     w=0;
 else
-    [Vm,u,w]=arrayfun(@Biasi_Tognetti_step,Vm,state{1},state{2},Ie,dv2dt,domain,scalar);
+    [Vm,u,w,dv2dt]=arrayfun(@Biasi_Tognetti_step,Vm,state{1},state{2},Ie,dv2dt,domain,scalar);
 end
 
 state{1}=u;
 state{2}=w;
 
-    function [Vm,u,w]=Biasi_Tognetti_step(Vm,u,w,Ie,dv2dt,region,scalar)
+    function [Vm,u,w,dv2dt]=Biasi_Tognetti_step(Vm,u,w,Ie,dv2dt,region,scalar)
         
         %MODEL PARAMETERS
         if region ==2

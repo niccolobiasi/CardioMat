@@ -18,18 +18,25 @@ CardioMat is a Matlab toolbox for cardiac electrophysiology simulation focused o
 
 A similar pipeline for atrial models is available. See the example_atria script for details (available at [https://doi.org/10.5281/zenodo.14699421](https://doi.org/10.5281/zenodo.14699420)).
 Methods are described in details in the associated publication (https://doi.org/10.1016/j.compbiomed.2024.109529).
+A whole-heart simulation pipeline is now also available. This include an atrioventricular model connecting atria and His-Purkinje system.
+For executing whole heart simulations the runSimulation_wh.m function must be used. Atrial and ventricular segmentation must be provided separately.
+Methodological details about whole-heart models are provided in the associated publication (https://doi.org/10.1007/s00366-025-02214-z)
 
 ## Usage
 
-Each function is provided with an help documentation explaining the usage of the function. 3 example scripts showing the use of CardioMat in different scenarios are available at [https://doi.org/10.5281/zenodo.14699421](https://doi.org/10.5281/zenodo.14699420).  
-Simulation results are saved into a binary file and can be visualized with plotFrame.m and VolShFrame.m functions. The former uses standard Matlab figures, the latter is based on volshow() Matlab command and uses a viewer3d. 
+Each function is provided with an help documentation explaining the usage of the function. Some example scripts showing the use of CardioMat in different scenarios are available at [https://doi.org/10.5281/zenodo.14699421](https://doi.org/10.5281/zenodo.14699420).  
+These include scripts showing ventricular, atrial, and whole-heart models construction and simulation. Additionally, a script executing the N-version benchmark problem is provided. 
+Simulation results are saved into a binary file and can be visualized with plotFrame.m and VolShFrame.m functions. The former uses standard Matlab figures, the latter is based on volshow() Matlab command and uses a viewer3d.
+For whole-heart simulations the functions plotFrame_wh.m and VolShFrame_wh.m must be used. 
+Please, note that not all CardioMat functionalities were extensively tested. We are developing CardioMat based on our research needs and some features (not involved in our publications) have not been rigorously verified yet.
+Thus, if you experience any bug, error, or inconsistent results, please open an issue and/or send an email to niccolo.biasi@ing.unipi.it with a description of the issue.
 
 ## Requirements
 
 CardioMat toolbox was tested on Matlab R2023b and R2024a, and it is supposed to work for this and future releases.
 The runSimulation.m function uses the gpuArray structure thus it requires the **Parallel Computing Toolbox**.
-createPurkinje.m, VolSh.m, and VolShFrame.m requires the **Image Processing Toolbox**.
-The vox2carp.m function requires iso2mesh toolbox available in the Matlab path (dowload from: https://github.com/fangq/iso2mesh). vox2carp.m allows to generates 3D mesh in openCARP (https://opencarp.org/) format, including fiber orientation and domain labels.
+createPurkinje.m, VolSh.m, VolShFrame.m, and all dependant functions requires the **Image Processing Toolbox**.
+The vox2carp.m function requires iso2mesh toolbox available in the Matlab path (dowload from: https://github.com/fangq/iso2mesh). vox2carp.m allows to generates 3D meshes in openCARP (https://opencarp.org/) format, including fiber orientation and domain labels.
 
 
 ## License 

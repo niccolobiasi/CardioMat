@@ -24,6 +24,8 @@ function [f,s,t]=generateFibers(VoxelMat,apicobasal,transmural,options)
 %ventricle (default=0)
 %- transmural_bv: a transmural field for biventricular geometries (pointing
 % from left to right ventricle in the septum).
+%- interventricular: an interventricular field equal to 0 in the left
+%ventricle and to 1 in the right ventricle (default:0)
 %
 % f=generateFibers(VoxelMat,apicobasal,transmural,options) returns a
 % structure f with field 'x','y', and 'z' containing the components of the
@@ -107,6 +109,12 @@ if isfield(options,'interventricular')
     interventricular=options.interventricular;
 else
     interventricular=zeros(numel(VoxelMat),1);
+end
+
+if length(transmural)~=numel(VoxelMat) && length(transmural)==nnz(VoxelMat)
+    tmp=nan(numel(VoxelMat),1);
+    tmp(VoxelMat(:))=transmural;
+    transmural =tmp;
 end
 
 S=gradMat(VoxelMat,'x');

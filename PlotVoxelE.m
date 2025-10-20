@@ -55,6 +55,7 @@ end
 
 h=PlotVoxel(FV,Vm_plot,extInd,cmap,alpha,addLight);
 ax=h.Parent;
+ax.CLimMode='manual';
 hold on
 h1=PlotVoxel(FV1,plot_fib,extInd1,'k',1,0);
 

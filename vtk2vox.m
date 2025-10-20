@@ -41,10 +41,7 @@ z=Zmin:res:Zmax;
 TR=triangulation(vtk_elem,vtk_points);
 F=freeBoundary(TR);
 VoxelMat=inpolyhedron(F,vtk_points,x,y,z,'tol',res/2);
-seed=find(VoxelMat);
-seed=seed(randi(length(seed)));
-eik1=solveEikonal(VoxelMat,seed);
-VoxelMat(eik1==-1 & VoxelMat(:))=0;
+VoxelMat=cleanGeometry(VoxelMat);
 [FV,extInd]=computeSurface(VoxelMat,res);
 if nargout>1
     if nargin>2

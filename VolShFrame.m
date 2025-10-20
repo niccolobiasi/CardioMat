@@ -1,9 +1,9 @@
 function vol_handle=VolShFrame(filename_bin,filename_geom,cmap)
-%VolShowFrame(filename_bin) read the binary file with name filename_bin and
-%allows interactive visualzation of saved data by using MATLAB volume. 
+% VolShowFrame(filename_bin) read the binary file with name filename_bin and
+% allows interactive visualzation of saved data by using MATLAB volume. 
 % VolShowFrame search for a mat file in the same path and with the same
 % name containing simulation metadata. Otherwise the mat file filename can be
-%passed as second argument to the plotFrame function.
+% passed as second argument.
 
 fid=fopen(filename_bin,'r');
 
@@ -14,7 +14,7 @@ if nargin<3
     cmap=parula;
 end
 
-load(filename_geom,"VoxelMat","ind_in",'plot_fib','res');
+load(filename_geom,"VoxelMat","ind_in",'plot_fib','res','dt_save');
 sizeVm=nnz(ind_in);
 fseek(fid,0,'eof');
 Nframe=ftell(fid)/4/sizeVm;
@@ -45,6 +45,7 @@ vol_fib=volshow(plot_fib,Parent=viewer);
 vol_fib.Colormap=[0 0 0];
 frame=1;
 disp(['Number of saved frame: ' num2str(Nframe)])
+disp(['frame=' num2str(frame) ', t=' num2str((frame-1)*dt_save) 'ms'])
 while true
     str=input('Type F to advance a frame, S to select a frame, Q to exit \n','s');
     if str=='Q'
@@ -68,7 +69,7 @@ while true
 
     vol_handle.Data(ind_in)=Vm;
     vol_handle.Data(idx_toadj)=Vm(idx);
-    disp(['frame=' num2str(frame)])
+    disp(['frame=' num2str(frame) ', t=' num2str((frame-1)*dt_save) 'ms'])
 
 end
 

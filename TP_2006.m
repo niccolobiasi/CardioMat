@@ -1,4 +1,4 @@
-function [Vm,state]=TP_2006(Vm,state,Ie,dv2dt,domain,dt,scalar)
+function [Vm,state,dv2dt]=TP_2006(Vm,state,Ie,dv2dt,domain,dt,scalar)
 % This function implements the TenTusscher-Panfilov (TP) 
 % model ( https://doi.org/10.1152/ajpheart.00109.2006)for the CardioMat
 %  toolbox. Epicardial (domain=1), endocardial (domain=2), and,
@@ -47,7 +47,7 @@ if nargin==0
     CaSR = 3.64;
     R_m = 0.9073;
 else
-    [Vm,Nai,Cai,CaSR,CaSS,Ki,m,h,j,d,f,f2,fcass,s,r,Xs,Xr1,Xr2,R_m]=...
+    [Vm,Nai,Cai,CaSR,CaSS,Ki,m,h,j,d,f,f2,fcass,s,r,Xs,Xr1,Xr2,R_m,dv2dt]=...
         arrayfun(@TP_step,Vm,state{1},state{2},state{3},state{4},state{5},...
         state{6},state{7},state{8},state{9},state{10},state{11},state{12},...
         state{13},state{14},state{15},state{16},state{17},state{18}, ...
@@ -73,7 +73,7 @@ state{16}=Xr1;
 state{17}=Xr2;
 state{18}=R_m;
 
-    function [Vm,Nai,Cai,CaSR,CaSS,Ki,m,h,j,d,f,f2,fcass,s,r,Xs,Xr1,Xr2,R_m]=...
+    function [Vm,Nai,Cai,CaSR,CaSS,Ki,m,h,j,d,f,f2,fcass,s,r,Xs,Xr1,Xr2,R_m,dv2dt]=...
             TP_step(Vm,Nai,Cai,CaSR,CaSS,Ki,m,h,j,d,f,f2,fcass,s,r,Xs,Xr1,Xr2,R_m,Ie,dv2dt,region,scalar)
 
         R=8314.3; %J*K^(-1)*Mol^(-1)

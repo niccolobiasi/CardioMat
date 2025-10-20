@@ -29,7 +29,7 @@ function runSimulation(VoxelMat,options)
 % vector of size ninX1.
 %
 % - Dpar: defines the diffusion in the longitudinal fiber direction
-% (default= 1.2e-3)
+% (default= 1.2e-3 cm^2/ms)
 %
 % - anisot_ratio: defines the anisotropy ratio (default=4)
 %
@@ -56,10 +56,19 @@ function runSimulation(VoxelMat,options)
 %       - ERP (optional): effective refractory period at PMJ(default=400ms)
 %       - fib_thr (optional): thrshold value on the normalized pixel
 %       intensity to disable PMJ in the border zone (default=0.4)
+%       - rv_delay: additional delay in the connection between His bundle
+%       and right bundle branch (default=0ms)
+%       - lv_delay: additional delay in the connection between His bundle
+%       and left bundle branch (default=0ms)
 % duration, ant_delay, retro_delay, and ERP can be defined as scalar
 % quantity equal for each PMJ or as a vector of length equal to terminal
 % nodes in the purkinje tree (use "term_mask=not(ismember(pkn_elem(:,2),pkn_elem(:,1)));
 % term_ind=pkn_elem(term_mask,2); " to find voxel coordinate of PMJs).
+% The rv_delay and lv_delay parameters are applied by assuming the Purkinje
+% network is generated with the createPurkinje_biv function (the number
+% of node must be odd with the first node defining the His bundle; left and
+% right purkinje networks must be composed by the same number of nodes; the
+% left purkinje nodes shoud appear first in the pkn_nodes matrix).
 %
 % - ExtStim: is an array of structures to define external stimulations with the
 % following subfields (each array element correspond to a stimulation):
@@ -92,13 +101,20 @@ function runSimulation(VoxelMat,options)
 %considered for computation of membrane potential (default: 1e-4).
 %
 %- save_state: structure to specify savings of the state of the
-%simulations. The savestate structure may have two subfields:
+%simulation. The save_state structure may have two subfields:
 %   - times: defines a vector of times at which saving the state
 %     variables (default: [], no savings).
 %   - filename: prefix name of mat files (default: 'sim').
 %
 %- load_state: filename of a mat file containing the state variables of the
 %ionic model to use as initial condition.
+%
+%- ext_pot:structure to specify computation of extracellular potential by
+%assuming infinite homogeneous conductor. The ext_pot structure may have
+%the following subfiles:
+%   - pos: a NeX3 matrix indicating the positions at which computing the
+%   extracellular potential (mandatory).
+%   - cond: diffusivity of the bath (default: 0.003 cm^2/ms)
 
 
 
@@ -256,6 +272,7 @@ else
     model='Biasi_Tognetti';
 end
 
+
 %% Define simulation length
 t=gpuArray(0:dt:T);
 Nt=length(t);
@@ -297,7 +314,22 @@ if isfield(options,'pkj')
     else
         pkj_vel=340;
     end
-    distM=distM(term_ind,term_ind)*res/pkj_vel*100;
+    distM=distM*res/pkj_vel*100;
+    if isfield(options.pkj,'rv_delay') || isfield(options.pkj,'lv_delay')
+        if isfield(options.pkj,'rv_delay')
+            rv_delay=options.pkj.rv_delay;
+        else
+            rv_delay=0;
+        end
+        if isfield(options.pkj,'lv_delay')
+            lv_delay=options.pkj.lv_delay;
+        else
+            lv_delay=0;
+        end
+        distM(1,:)=distM(1,:)+[zeros(1,1) lv_delay*ones(1,(size(pkn_nodes,1)-1)/2) rv_delay*ones(1,(size(pkn_nodes,1)-1)/2)];
+        distM(:,1)=distM(:,1)+[zeros(1,1); lv_delay*ones((size(pkn_nodes,1)-1)/2,1); rv_delay*ones((size(pkn_nodes,1)-1)/2-1,1)];
+    end
+    distM=distM(term_ind,term_ind);
     term_ind=term_ind(2:end);
     term_nodes=pkn_nodes(term_ind,:);
     term_map=round(sub2ind(size(VoxelMat),term_nodes(:,2),term_nodes(:,1),term_nodes(:,3)));
@@ -396,6 +428,7 @@ if ~isinf(visual)
     hf.MenuBar='figure';
     [FV,extInd]=computeSurface(VoxelMat & ~plot_fib,res);
     h=PlotVoxel(FV,Vm_plot, extInd, parula,1,0);
+    ttl=title('Time = 0 ms');
     hold on
     PlotVoxel(FV1,plot_fib,extInd1,'k',1,0);
     colorbar
@@ -410,78 +443,147 @@ end
 
 if toSave
     fid=fopen(filename,'w+');
-    save(filename,'ind_in','plot_fib','VoxelMat','res','mask_phi','dt_save');
+    fwrite(fid,gather(Vm),'single');
+    save(filename,'ind_in','plot_fib','VoxelMat','res','mask_phi','dt_save','t');
 end
 %% initializa PKJ
 if  exist('term_map2','var')
-    state=gpuArray(zeros(size(good_term)));
-    t_last=gpuArray(zeros(size(good_term)));
-    Tact=Inf(size(good_term))';
+    if isfield(options,'load_state')
+        if isfield(saved_state,'state')
+            state=saved_state.state;
+            t_last=saved_state.t_last;
+            Tact=saved_state.Tact;
+            if length(state)~=length(good_term)
+                error(['Purkinje network in the state file does not '...
+                    'correspond to Purkinje network specified in the ' ...
+                    'options structure']);
+            end
+        else
+            warning(['The loaded state file does not contain Purkinje states;'...
+                ' Purkinje states will be initialized at rest'])
+            state=gpuArray(zeros(size(good_term)));
+            t_last=gpuArray(zeros(size(good_term)));
+            Tact=Inf(size(good_term))';
+        end
+    else
+        state=gpuArray(zeros(size(good_term)));
+        t_last=gpuArray(zeros(size(good_term)));
+        Tact=Inf(size(good_term))';
+    end
+else
+    if isfield(options,'load_state')
+        if isfield(saved_state,'state')
+            warning(['Loaded state contains Purkinje network states but ' ...
+                'no Purkinje network has been provided in the options' ...
+                'structure. The simulation will be executed without ' ...
+                'Purkinje network']);
+        end
+    end
 end
-
-%% RUN SIMULATION
-
-for i=1:Nt
-    dv2dt=As*Vm;
-    for j=1:length(Stim)
-        if Stim(j).ext_stim(i)
-            dv2dt=dv2dt+Stim(j).I_mask;
+    %% extracellular potential matrix
+    if isfield(options,'ext_pot')
+        pos = options.ext_pot.pos;
+        if isfield(options.ext_pot,'cond')
+            bath_cond=options.ext_pot.cond;
+        else
+            bath_cond=0.003;
         end
+        LF=gpuArray(1/4/pi/bath_cond*LFvector(phi,mask_phi,plot_fib2,fx,fy,fz,Dpar,anisot_ratio,res,pos));
+        Vext=NaN(Nt,size(pos,1));
+        Vext(1,:)=LF*Vm;
+        figure;
+        h_ext=plot(t,Vext);
+        ax_ext=h_ext.Parent;
+        ax_ext.XLim=[0 T];
     end
 
-    [Vm,state_model]=feval(model,Vm,state_model,Ie,dv2dt,domain,dt,scalar);
 
-    if toSave
-        if mod(i,i_save)==0
-            fwrite(fid,gather(Vm),'single');
-        end
-    end
+    %% RUN SIMULATION
 
-    if ismember(dt*i,savestate_times)
-        save([filename_state '_state_' num2str(dt*i)], 'Vm','state_model');
-    end
-
-    if exist('term_map2','var')
-        active=dv2dt(term_map2)>0 & Vm(term_map2)>-20;
-        if ismember(i,pkn_stim_n)
-            Tact=min(Tact,distM(1,good_term));
-        end
-        Tact=Tact-dt;
-        [s_v,s_pkj,state,t_last]=PKJnodeFun(Tact'<0,active,t(i),state,t_last,ant_delay,retro_delay,pkj_duration,0,ERP);
-        Tact(Tact<0)=Inf;
-        Tact=min([Tact;distM(good_term(s_pkj),good_term)],[],1);
-        Ie(:)=0;
-        Ie(term_map2(s_v))=pkj_current;
-    end
-    if mod(i,visual)==0
-        Vm_plot(ind_in)=gather(Vm);
-        h.CData=Vm_plot(extInd);
-        title(num2str(dt*i))
-        drawnow
-    end
-
-    if exist('term_map2','var') 
-         check_pkj=nnz(~isinf(Tact))==0 && nnz(state<3 & state>0)==0 && nnz(pkn_stim(i:end))==0;
-    else 
-        check_pkj=1;
-    end
-
-    if nnz(Vm>=-40)<5 && check_pkj
-        stop=1;
+    for i=1:Nt-1
+        dv2dt=As*Vm;
         for j=1:length(Stim)
-            if nnz(Stim(j).ext_stim(i:end))>0
-                stop=0;
+            if Stim(j).ext_stim(i)
+                dv2dt=dv2dt+Stim(j).I_mask;
+            end
+        end
+
+        [Vm,state_model,dv2dt]=feval(model,Vm,state_model,Ie,dv2dt,domain,dt,scalar);
+
+        if toSave
+            if mod(i,i_save)==0
+                fwrite(fid,gather(Vm),'single');
+            end
+        end
+
+        if exist('Tact','var')
+            active=dv2dt(term_map2)>0 & Vm(term_map2)>-20;
+            if ismember(i,pkn_stim_n)
+                Tact=min(Tact,distM(1,good_term));
+            end
+            Tact=Tact-dt;
+            [s_v,s_pkj,state,t_last]=PKJnodeFun(Tact'<0,active,t(i),state,t_last,ant_delay,retro_delay,pkj_duration,0,ERP);
+            Tact(Tact<0)=Inf;
+            Tact=min([Tact;distM(good_term(s_pkj),good_term)],[],1);
+            Ie(:)=0;
+            Ie(term_map2(s_v))=pkj_current;
+        end
+
+        if ismember(dt*i,savestate_times)
+            if exist('Tact','var')
+                tmp=t_last;
+                t_last=t_last-dt*i;
+                save([filename_state '_state_' num2str(dt*i)], 'Vm','state_model','Tact','t_last','state');
+                t_last=tmp;
+            else
+                save([filename_state '_state_' num2str(dt*i)], 'Vm','state_model');
+            end
+        end
+
+        if exist('Vext','var')
+            Vext(i+1,:)=LF*Vm;
+        end
+
+
+        if mod(i,visual)==0
+            Vm_plot(ind_in)=gather(Vm);
+            h.CData=Vm_plot(extInd);
+            ttl.String=['Time = ' num2str(dt*i) ' ms'];
+            if exist('Vext','var')
+                h_ext.YData=Vext;
+            end
+            drawnow
+        end
+
+        if exist('term_map2','var')
+            check_pkj=nnz(~isinf(Tact))==0 && nnz(state<3 & state>0)==0 && nnz(pkn_stim(i:end))==0;
+        else
+            check_pkj=1;
+        end
+
+        if nnz(Vm>=-40)<5 && check_pkj
+            stop=1;
+            for j=1:length(Stim)
+                if nnz(Stim(j).ext_stim(i:end))>0
+                    stop=0;
+                    break;
+                end
+            end
+            if stop==1
                 break;
             end
         end
-        if stop==1
-            break;
+    end
+
+    if toSave
+        fclose(fid);
+    end
+
+    if exist('Vext','var')
+        if toSave
+            save([options.savefile.filename '_ext'],'Vext','t');
+        else
+            save('ou_ext','Vext','t');
         end
     end
-end
-
-if toSave
-    fclose(fid);
-end
-
 

@@ -1,4 +1,4 @@
-function [Vm,state]=MyModel(Vm,state,Ie,dv2dt,domain,dt,scalar)
+function [Vm,state,dv2dt]=MyModel(Vm,state,Ie,dv2dt,domain,dt,scalar)
 % This function serves as a template for the definition of ionic model
 % function to be used with CardioMat.
 
@@ -11,7 +11,7 @@ if nargin==0
     % state_N=....
 else
     % Run model function 
-    % [Vm,state_1, state_2,...., state_N]=arrayfun(@MyModel_step,Vm,state{1},state{2},........,state{N},Ie,dv2dt,domain,scalar);
+    % [Vm,state_1, state_2,...., state_N,dv2dt]=arrayfun(@MyModel_step,Vm,state{1},state{2},........,state{N},Ie,dv2dt,domain,scalar);
 end
 
 % state{1}=state_1;
@@ -20,7 +20,7 @@ end
 % state{N}=state_N;
 
       %% MODEL FUNCTION
-    % function [Vm,state_1,state_2,....,state_N]=MyModel_step(Vm,state_1,state_2,....,state_N,Ie,dv2dt,region,scalar)
+    % function [Vm,state_1,state_2,....,state_N,dv2dt]=MyModel_step(Vm,state_1,state_2,....,state_N,Ie,dv2dt,region,scalar)
     % 
     %     .........
     %     .........

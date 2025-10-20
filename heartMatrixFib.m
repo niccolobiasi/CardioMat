@@ -1,13 +1,17 @@
 function [As] = heartMatrixFib(heartGeom,mask_heart,maskF,fx,fy,fz,D,ratio,res_mm)
-%%CREATE ANISOTROPIC DIFFUSION MATRIX FROM INPUTS:%%%%%%%%%%%%%%%%%%%%%%%%%
-%heartGeom: phase field voxel matrix of the heart geometry 
+% This function creates a matrix implementing the anisotropic diffusion
+% operator for the monodomain equation.
+% INPUT 
+% heartGeom: phase field voxel matrix of the heart geometry 
 %       NOTE: values must be thresholded or you are dividing by 0
-%mask_heart: mask of computational domain (where heartGeom > minimal threshold)
-%maskF: mask of fibrotic voxels - deprecated-
-%fx,fy,fz: x,y,z components of the normalized cardiac fibers
-%D: tissue diffusivity 
-%ratio: anisotropy ratio
-%res_mm: resolution in mm of the input voxel volume
+% mask_heart: mask of computational domain (where heartGeom > minimal threshold)
+% maskF: mask of fibrotic voxels - deprecated-
+% fx,fy,fz: x,y,z components of the normalized cardiac fibers
+% D: tissue diffusivity 
+% ratio: anisotropy ratio
+% res_mm: resolution in mm of the input voxel volume
+% OUTPUT
+% As: diffusion matrix operator
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ind_in=mask_heart & ~maskF;

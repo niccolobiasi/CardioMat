@@ -42,7 +42,6 @@ end
 
         end
 
-        %riconoscimento stimoli
         if (state == 0 && A1)
 
             state = 1;

@@ -1,9 +1,10 @@
-function h=plotFrame(filename_bin,filename_geom, cmap)
-% plotFrame(filename_bin) read the binary file with name filename_bin and
-% allows interactive visualzation of saved data. plotFrame search for a mat
-% file in the same path and with the same name containing simulation
-% metadata (geometry and fibrosis). Otherwise the mat file filename can be
-% passed as second argument to the plotFrame function.
+function h=plotFrame_wh(filename_bin,filename_geom, cmap)
+% plotFrame_wh(filename_bin) is the whole-heart equivalent of plotFrame.
+% It reads the binary file with name filename_bin and allows interactive 
+% visualzation of saved data. plotFrame_wh search for a mat file in the 
+% same path and with the same name containing simulation metadata (geometry
+% and fibrosis). Otherwise the mat file filename can be passed as second 
+% argument to the plotFrame function.
 
 fid=fopen(filename_bin,'r');
 
@@ -21,14 +22,15 @@ if isempty(cmap)
     cmap=parula;
 end
 
-load(filename_geom,"VoxelMat","ind_in",'plot_fib','res','dt_save');
-sizeVm=nnz(ind_in);
+load(filename_geom,"ventr","atr","ind_in_atr",'ind_in_ventr','plot_fib','res','dt_save');
+VoxelMat=ventr | atr;
+sizeVm_atr=nnz(ind_in_atr);
+sizeVm_ventr=nnz(ind_in_ventr);
 Vm_plot=nan(size(VoxelMat));
 fseek(fid,0,'eof');
-Nframe=ftell(fid)/4/sizeVm;
-t=0:dt_save:(Nframe-1)*dt_save;
+Nframe=ftell(fid)/4/(sizeVm_atr+sizeVm_ventr);
 fseek(fid,0,'bof');
-
+t=0:dt_save:(Nframe-1)*dt_save;
 
 [FV,extInd]=computeSurface(VoxelMat & ~plot_fib,res);
 FV_cut=FV;
@@ -37,8 +39,10 @@ extInd_cut=extInd;
 FV_cut1=FV1;
 
 
-Vm=fread(fid,sizeVm,'single');
-Vm_plot(ind_in)=Vm;
+Vm=fread(fid,sizeVm_atr,'single');
+Vm_plot(ind_in_atr)=Vm;
+Vm=fread(fid,sizeVm_ventr,'single');
+Vm_plot(ind_in_ventr)=Vm;
 
 
 hf=figure;
@@ -57,9 +61,9 @@ x=(0.5:1:(Nx-0.5))*res;
 y=(0.5:1:(Ny-0.5))*res;
 z=(0.5:1:(Nz-0.5))*res;
 [gridx, gridy, gridz]=meshgrid(x,y,z);
-grx=gridx(ind_in);
-gry=gridy(ind_in);
-grz=gridz(ind_in);
+grx=[gridx(ind_in_atr); gridx(ind_in_ventr)];
+gry=[gridy(ind_in_atr); gridy(ind_in_ventr)];
+grz=[gridz(ind_in_atr); gridz(ind_in_ventr)];
 
 colorbar
 clim([-85 50])
@@ -90,7 +94,8 @@ while true
             disp('Maximum frame achieved')
             continue;
         end
-        Vm=fread(fid,sizeVm,'single');
+        Vm_atr=fread(fid,sizeVm_atr,'single');
+        Vm_ventr=fread(fid,sizeVm_ventr,'single');
         frame=frame+1;
     elseif str=='S'
         frame=input('Select frame:');
@@ -98,8 +103,9 @@ while true
             disp('Selcted frame does not exists')
             continue;
         end
-        fseek(fid,4*sizeVm*(frame-1),'bof');
-        Vm=fread(fid,sizeVm,'single');
+        fseek(fid,4*(sizeVm_atr+sizeVm_ventr)*(frame-1),'bof');
+        Vm_atr=fread(fid,sizeVm_atr,'single');
+        Vm_ventr=fread(fid,sizeVm_ventr,'single');
     elseif str=='L'
         camlight;
         continue
@@ -245,7 +251,7 @@ while true
             [~,voxel_ind_in]=min(distances);
             Vm_array=NaN(Nframe,1);
             for k=1:Nframe
-                fseek(fid,4*sizeVm*(k-1)+4*(voxel_ind_in-1),'bof');
+                fseek(fid,4*(sizeVm_atr+sizeVm_ventr)*(k-1)+4*(voxel_ind_in-1),'bof');
                 Vm_array(k)=fread(fid,1,'single');
             end
 
@@ -260,10 +266,10 @@ while true
 
     end
 
-    Vm_plot(ind_in)=Vm;
+    Vm_plot(ind_in_atr)=Vm_atr;
+    Vm_plot(ind_in_ventr)=Vm_ventr;
     h.CData=Vm_plot(extInd_cut);
     ttl.String=['frame=' num2str(frame) '; time=' num2str(t(frame))];
-
 
 end
 fclose(fid);

@@ -1,4 +1,4 @@
-function [transmural, apicobasal, transmural_fibers, intraventricular]=computeUVC(VoxelMat,tag,res)
+function [transmural, apicobasal, transmural_fibers, interventricular]=computeUVC(VoxelMat,tag,res)
 % computeUVC generates transmural and apicobasal coordinates into a
 % voxelized geometry with labelled surfaces.
 %
@@ -11,10 +11,10 @@ function [transmural, apicobasal, transmural_fibers, intraventricular]=computeUV
 % [transmural, apicobasal]=computeUVC(VoxelMat,tag,res) allows to define a
 % different resolution.
 %
-% [transmural, apicobasal, transmural_fibers, intraventricular]=computeUVC(VoxelMat,tag,res)
+% [transmural, apicobasal, transmural_fibers, interventricular]=computeUVC(VoxelMat,tag,res)
 % should be call for biventricular meshes.
 % In this case, computeUVC also outputs an additional scalar field
-% (transmural_fibers) and the intraventricular coordinate.
+% (transmural_fibers) and the interventricular coordinate.
 % transmural_fibers is a scalar field with value equal to 0 on the left
 % ventricular endocardium, 0.5 on the right ventricular endocardium, and 1
 % on the epicardium. Thus, its gradient results in a trasmural direction on
@@ -62,7 +62,7 @@ if nargout>2
     phi_rv=eik_rv./(eik_rv+eik_lv_epi);
     transmural_fibers=(2*phi_lv+phi_rv-1)/2;
 
-    intraventricular=eik_lv./(eik_lv+eik_rv);
+    interventricular=eik_lv./(eik_lv+eik_rv);
 end
 
 

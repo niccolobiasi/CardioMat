@@ -13,8 +13,6 @@ dx2=dx^2;
 T=20;
 N=T/dt+1;
 
-[FV,extInd]=computeSurface(VoxelMat,dx);
-
 %diffuse state + thresholding
 phi=imgaussfilt3(double(VoxelMat),8*xi/dx);
 mask=phi>(mean(phi,'all')*0.5);
