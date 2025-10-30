@@ -28,7 +28,7 @@ Each function is provided with an help documentation explaining the usage of the
 These include scripts showing ventricular, atrial, and whole-heart models construction and simulation. Additionally, a script executing the N-version benchmark problem is provided. 
 Simulation results are saved into a binary file and can be visualized with plotFrame.m and VolShFrame.m functions. The former uses standard Matlab figures, the latter is based on volshow() Matlab command and uses a viewer3d.
 For whole-heart simulations the functions plotFrame_wh.m and VolShFrame_wh.m must be used. 
-Please, note that not all CardioMat functionalities were extensively tested. We are developing CardioMat based on our research needs and some features (not involved in our publications) have not been rigorously verified yet.
+Please, note that not all CardioMat functionalities were extensively tested. We are developing CardioMat based on our research needs and some new features may have not been rigorously verified yet.
 Thus, if you experience any bug, error, or inconsistent results, please open an issue and/or send an email to niccolo.biasi@ing.unipi.it with a description of the issue.
 
 ## Requirements
