@@ -22,6 +22,8 @@ A whole-heart simulation pipeline is now also available. This include an atriove
 For executing whole heart simulations the runSimulation_wh.m function must be used. Atrial and ventricular segmentation must be provided separately.
 Methodological details about whole-heart models are provided in the associated publication (https://doi.org/10.1007/s00366-025-02214-z)
 
+A virtual ablation tool has been recently added through the VirtualAblation.m function. An example of virtual ablation and VT inducibility testing is prestend in the script VTprotocol.m, available at [https://doi.org/10.5281/zenodo.14699421](https://doi.org/10.5281/zenodo.14699420). For methodological details see the associated publication ([https://www.biorxiv.org/content/10.64898/2026.08.06.743176v1](https://www.biorxiv.org/content/10.64898/2026.08.06.743176v1)). A standalone application for virtual ablation is also available at [https://zenodo.org/records/21335697](https://zenodo.org/records/21335697).
+
 ## Usage
 
 Each function is provided with an help documentation explaining the usage of the function. Some example scripts showing the use of CardioMat in different scenarios are available at [https://doi.org/10.5281/zenodo.14699421](https://doi.org/10.5281/zenodo.14699420).  
