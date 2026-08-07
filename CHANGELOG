@@ -1,3 +1,19 @@
+UPDATE 07/08/2026
+Update overview: cardioMat now supports interactive virtual ablation for
+the implementation of in silico trials of cathetr ablation strategies.
+
+1) VirtualAblation: added function to perform virtual ablations
+
+2) runSimulation: initialized state vector directly on GPU
+
+3) runSimulation_wh: initialized state vector directly on GPU
+
+4) lat2shell: added lat output for use in VirtualAblation
+
+5) bench_model: corrected default scalar value
+
+6) TP_2006: added influence of scalar (not verified yet)
+
 UPDATE 20/10/2025
 
 Update overview: CardioMat now implements a pipeline for whole heart cardiac

@@ -15,7 +15,7 @@ function [Vm_array, state_array]=bench_model(model,Ie,dt,domain,scalar)
 
 
 if nargin<5 || isempty(scalar)
-    scalar=1;
+    scalar=0;
 end
 
 if nargin<4 || isempty(domain)

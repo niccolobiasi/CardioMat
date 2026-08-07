@@ -117,20 +117,20 @@ state{18}=R_m;
         Vss=0.00005468; %nL       Subspace volume
 
         %Conductances [nS/pF] 
-        GNa=14.838; %[cm^3*uF^(-1)*s^(-1)]
+        GNa=14.838*(1-scalar); %[cm^3*uF^(-1)*s^(-1)]
         GK1=5.405;
         if region==2 %endo
-            Gto=0.073;
-            GKs=0.392;
+            Gto=0.073*(1-scalar);
+            GKs=0.392*(1-scalar);
         elseif region==3 %mid
-            Gto=0.294;
-            GKs=0.098;
+            Gto=0.294*(1-scalar);
+            GKs=0.098*(1-scalar);
         else  %epi
-            Gto=0.294;
-            GKs=0.392;
+            Gto=0.294*(1-scalar);
+            GKs=0.392*(1-scalar);
         end
-        GKr=0.153;
-        GCaL=0.0000398;
+        GKr=0.153*(1-scalar);
+        GCaL=0.0000398*(1-scalar);
         Gpk=0.0146;
         GpCa=0.1238;
         GbNa=0.00029;

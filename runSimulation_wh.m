@@ -435,7 +435,7 @@ fields=extrapField([f.x,f.y,f.z,domain_ventr,scalar_ventr,fib_ventr],ventr,extIn
 fx=fields(:,1);
 fy=fields(:,2);
 fz=fields(:,3);
-fib_ventr=gpuArray(fields(:,6));
+fib_ventr=fields(:,6);
 plot_fib2_ventr=false(size(VoxelMat));
 plot_fib2_ventr(mask_phi_ventr)=logical(fib_ventr(mask_phi_ventr(:)));
 ind_in_ventr= mask_phi_ventr & not(plot_fib2_ventr);
@@ -450,7 +450,7 @@ fields_atr=extrapField([fa.x,fa.y,fa.z,domain_atr, scalar_atr, fib_atr],atr, ext
 fax=fields_atr(:,1);
 fay=fields_atr(:,2);
 faz=fields_atr(:,3);
-fib_atr=gpuArray(fields_atr(:,6));
+fib_atr=fields_atr(:,6);
 plot_fib2_atr=false(size(VoxelMat));
 plot_fib2_atr(mask_phi_atr)=logical(fib_atr(mask_phi_atr(:)));
 ind_in_atr=mask_phi_atr & not(plot_fib2_atr);
@@ -639,12 +639,12 @@ else
     Vm_ventr=gpuArray(Vm_ventr0*ones(nin_ventr,1));
     state_model_ventr=cell(nVar_ventr,1);
     for ii=1:nVar_ventr
-        state_model_ventr{ii}=state_model_ventr0{ii}*ones(nin_ventr,1);
+        state_model_ventr{ii}=gpuArray(state_model_ventr0{ii}*ones(nin_ventr,1));
     end
     Vm_atr=gpuArray(Vm_atr0*ones(nin_atr,1));
     state_model_atr=cell(nVar_atr,1);
     for ii=1:nVar_atr
-        state_model_atr{ii}=state_model_atr0{ii}*ones(nin_atr,1);
+        state_model_atr{ii}=gpuArray(state_model_atr0{ii}*ones(nin_atr,1));
     end
 end
 

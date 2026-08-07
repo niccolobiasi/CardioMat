@@ -289,7 +289,7 @@ fields=extrapField([f.x,f.y,f.z,domain,scalar,plot_fib(VoxelMat)],VoxelMat,extIn
 fx=fields(:,1);
 fy=fields(:,2);
 fz=fields(:,3);
-fib=gpuArray(fields(:,6));
+fib=fields(:,6);
 plot_fib2=false(size(VoxelMat));
 plot_fib2(mask_phi)=logical(fib(mask_phi(:)));
 ind_in= mask_phi & not(plot_fib2);
@@ -414,7 +414,7 @@ else
     Vm=gpuArray(Vm0*ones(nin,1));
     state_model=cell(nVar,1);
     for ii=1:nVar
-        state_model{ii}=state_model0{ii}*ones(nin,1);
+        state_model{ii}=gpuArray(state_model0{ii}*ones(nin,1));
     end
 end
 
