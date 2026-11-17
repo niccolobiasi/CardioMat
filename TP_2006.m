@@ -189,7 +189,7 @@ state{18}=R_m;
         r_inf=1/(1+exp((20-Vm)/6));
         tau_r=9.5*exp(-((Vm+40)^2)/1800)+0.8;
         if region==2 %endo
-            s_inf=1/(1+exp(Vm+28)/5); 
+            s_inf=1/(1+exp((Vm+28)/5)); 
             tau_s=1000*exp(-(Vm+67)^2/1000)+8; 
         else  %epi,mid
             s_inf=1/(1+exp((Vm+20)/5));
@@ -234,7 +234,9 @@ state{18}=R_m;
         kcasr=maxsr-((maxsr-minsr)/(1+(EC/CaSR)^2));
         k1=k10/kcasr; 
         k2=k20*kcasr;
-        R_m=R_m+dt*(-k2*CaSS*R_m+k4*(1-R_m));
+        R_inf = k4/(k2*CaSS + k4);
+        tau_R = 1/(k2*CaSS + k4);
+        R_m = R_inf + (R_m - R_inf)*exp(-dt/tau_R); %Rush-larsen update
         O=(k1*(CaSS)^2*R_m)/(k3+k1*(CaSS)^2);
         Irel=Vrel*O*(CaSR-CaSS); 
         Ileak=V_leak*(CaSR-Cai); 
